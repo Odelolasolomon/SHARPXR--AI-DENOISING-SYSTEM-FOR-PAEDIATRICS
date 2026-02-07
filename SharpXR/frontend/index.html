@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SharpXR — Image Processor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 24 24" aria-hidden><defs/><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z" fill="#0ea5a4" opacity="0.12"/><path d="M7 12c1.8-3 6-3 7.8 0" stroke="#0ea5a4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="12" cy="9.6" r="1.2" fill="#0ea5a4"/></svg>
+        <div>
+          <div class="title">SharpXR</div>
+          <div class="subtitle">Clean, fast image mask processing</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="nav-link" href="#" id="link-status">Status</a>
+        <a class="nav-link" href="#" id="link-about">About</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="card upload-card">
+        <h2 class="card-title">Upload Image</h2>
+        <form id="uploadForm" class="form">
+          <label id="dropZone" class="drop">
+            <input id="fileInput" type="file" accept="image/*" aria-label="Select image"/>
+            <div class="drop-inner">
+              <svg class="icon-upload" viewBox="0 0 24 24" aria-hidden><path d="M12 3v10M7 10l5-5 5 5M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+              <div>
+                <div id="fileName" class="drop-title">Choose or drop an image</div>
+                <div class="drop-sub">PNG / JPG — recommended 256×256</div>
+              </div>
+            </div>
+          </label>
+
+          <div class="controls">
+            <button id="submitBtn" class="btn primary" type="submit">Process Image</button>
+            <button id="healthBtn" class="btn outline" type="button">Check API</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="result" class="card hidden result-card">
+        <h2 class="card-title">Result</h2>
+        <div class="result-grid">
+          <figure>
+            <figcaption class="figcap">Input</figcap>
+            <img id="previewImg" class="preview" alt="Input preview" />
+          </figure>
+          <figure>
+            <figcaption class="figcap">Mask Output</figcap>
+            <img id="resultImg" class="preview" alt="Output mask" />
+          </figure>
+        </div>
+        <p id="shapeText" class="muted small"></p>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">Status</h2>
+        <pre id="statusText" class="status">Idle</pre>
+      </section>
+
+      <footer class="footer">Update API_URL in app.js before deploying. Backend must allow CORS from your frontend origin.</footer>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

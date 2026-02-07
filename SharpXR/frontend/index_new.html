@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SharpXR — AI Image Denoiser for Children</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #0ea5e9;
+      --success: #10b981;
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-elevated: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --border: rgba(148, 163, 184, 0.1);
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      --glow: 0 0 40px rgba(99, 102, 241, 0.3);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    .bg-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-gradient {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.15;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    .bg-gradient:nth-child(1) {
+      background: var(--primary);
+      top: -200px;
+      left: -200px;
+    }
+
+    .bg-gradient:nth-child(2) {
+      background: var(--secondary);
+      bottom: -200px;
+      right: -200px;
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(50px, 50px) scale(1.1); }
+    }
+
+    /* Container */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 2rem 0 3rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo-section {
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+      animation: pulse 3s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5); }
+    }
+
+    .logo svg {
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+
+    .brand-text h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .brand-text p {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+    }
+
+    /* Main content */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Card styling */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow);
+      transition: all 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(14, 165, 233, 0.05));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-zone::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .upload-zone:hover::before {
+      left: 100%;
+    }
+
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(14, 165, 233, 0.1));
+      transform: scale(1.02);
+    }
+
+    .upload-zone.dragover {
+      border-color: var(--secondary);
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(99, 102, 241, 0.15));
+      transform: scale(1.05);
+    }
+
+    .upload-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--glow);
+    }
+
+    .upload-icon svg {
+      width: 40px;
+      height: 40px;
+      color: white;
+    }
+
+    .upload-text h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+
+    .upload-text p {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+    }
+
+    .file-name {
+      margin-top: 1rem;
+      padding: 0.75rem 1.25rem;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      font-size: 0.875rem;
+      color: var(--success);
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* Button */
+    .btn-process {
+      width: 100%;
+      padding: 1.125rem 2rem;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.0625rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+      margin-top: 2rem;
+    }
+
+    .btn-process:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-process:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Result section */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .image-preview {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+
+    .image-preview:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .image-label {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      z-index: 1;
+      border: 1px solid var(--border);
+    }
+
+    .image-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+      min-height: 250px;
+      object-fit: contain;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.03), rgba(14, 165, 233, 0.03));
+    }
+
+    .result-info {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg-elevated);
+      border-radius: 12px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    /* Status indicator */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .status-dot.processing {
+      background: var(--secondary);
+      animation: spin 1s linear infinite;
+    }
+
+    .status-dot.error {
+      background: #ef4444;
+      animation: none;
+    }
+
+    /* Hidden class */
+    .hidden {
+      display: none;
+    }
+
+    /* Loading animation */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading {
+      animation: spin 1s linear infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      header {
+        padding: 1.5rem 0 2rem;
+      }
+
+      .brand-text h1 {
+        font-size: 2rem;
+      }
+
+      .brand-text p {
+        font-size: 1rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      .upload-zone {
+        padding: 3rem 1.5rem;
+      }
+
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Success animation */
+    @keyframes successPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .result-card {
+      animation: successPop 0.5s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-animation">
+    <div class="bg-gradient"></div>
+    <div class="bg-gradient"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="logo-section">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="brand-text">
+        <h1>SharpXR</h1>
+        <p>Make your images crystal clear with AI-powered denoising</p>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- Upload Card -->
+      <div class="card">
+        <form id="uploadForm">
+          <div class="upload-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/*">
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <div class="upload-text">
+              <h3 id="uploadTitle">Drop your image here or click to browse</h3>
+              <p>Supports PNG, JPG • Best results with 256×256 pixels</p>
+            </div>
+          </div>
+
+          <div id="fileNameDisplay" class="hidden">
+            <div class="file-name">
+              <span id="fileName"></span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-process" id="processBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="m8 12 2 2 4-4"/>
+            </svg>
+            Clean My Image
+          </button>
+
+          <div class="status-indicator" id="statusIndicator">
+            <span class="status-dot"></span>
+            <span id="statusText">Ready to process</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Result Card -->
+      <div class="card result-card hidden" id="resultCard">
+        <div class="result-grid">
+          <div class="image-preview">
+            <span class="image-label">Before (Original)</span>
+            <img id="originalImg" alt="Original Image">
+          </div>
+          <div class="image-preview">
+            <span class="image-label">After (Cleaned)</span>
+            <img id="resultImg" alt="Cleaned Image">
+          </div>
+        </div>
+
+        <div class="result-info" id="resultInfo">
+          <strong>✨ Success!</strong> Your image has been cleaned and denoised.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // UPDATE THIS to your deployed backend URL before production
+    const API_URL = 'http://localhost:8000';
+
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const uploadTitle = document.getElementById('uploadTitle');
+    const uploadForm = document.getElementById('uploadForm');
+    const dropZone = document.getElementById('dropZone');
+    const processBtn = document.getElementById('processBtn');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusText = document.getElementById('statusText');
+    const statusDot = statusIndicator.querySelector('.status-dot');
+    const resultCard = document.getElementById('resultCard');
+    const originalImg = document.getElementById('originalImg');
+    const resultImg = document.getElementById('resultImg');
+    const resultInfo = document.getElementById('resultInfo');
+
+    let selectedFile = null;
+
+    function updateStatus(message, status = 'ready') {
+      statusText.textContent = message;
+      statusDot.className = 'status-dot';
+      if (status === 'processing') {
+        statusDot.classList.add('processing');
+      } else if (status === 'error') {
+        statusDot.classList.add('error');
+      }
+    }
+
+    // File input handling
+    fileInput.addEventListener('change', (e) => {
+      selectedFile = e.target.files[0];
+      if (selectedFile) {
+        fileName.textContent = selectedFile.name;
+        fileNameDisplay.classList.remove('hidden');
+        uploadTitle.textContent = 'Image selected! Ready to process';
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          originalImg.src = e.target.result;
+        };
+        reader.readAsDataURL(selectedFile);
+        
+        updateStatus('Image loaded, click to process', 'ready');
+      }
+    });
+
+    // Drag and drop
+    dropZone.addEventListener('click', (e) => {
+      if (e.target !== fileInput) {
+        fileInput.click();
+      }
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        fileInput.files = e.dataTransfer.files;
+        fileInput.dispatchEvent(new Event('change'));
+      }
+    });
+
+    // Form submission
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!selectedFile) {
+        updateStatus('Please select an image first', 'error');
+        return;
+      }
+
+      processBtn.disabled = true;
+      const originalBtnContent = processBtn.innerHTML;
+      processBtn.innerHTML = '<svg class="loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><circle cx="12" cy="12" r="10"/></svg> Processing your image...';
+      updateStatus('Processing... This may take a moment', 'processing');
+      resultCard.classList.add('hidden');
+
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const response = await fetch(`${API_URL}/predict`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server error (${response.status}): ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        if (data.mask_png_b64) {
+          resultImg.src = `data:image/png;base64,${data.mask_png_b64}`;
+          
+          if (data.shape) {
+            resultInfo.innerHTML = `<strong>✨ Success!</strong> Your image has been cleaned and denoised. Output dimensions: ${data.shape.join(' × ')} pixels`;
+          }
+          
+          resultCard.classList.remove('hidden');
+          updateStatus('Complete! See your cleaned image below', 'ready');
+          
+          // Scroll to results
+          setTimeout(() => {
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 100);
+        } else {
+          throw new Error('No output received from the server');
+        }
+      } catch (error) {
+        console.error('Processing error:', error);
+        updateStatus(`Error: ${error.message}`, 'error');
+        alert(`Failed to process image: ${error.message}\n\nPlease make sure:\n1. Your backend server is running\n2. The API_URL is correctly configured\n3. The image format is supported`);
+      } finally {
+        processBtn.disabled = false;
+        processBtn.innerHTML = originalBtnContent;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# API/Deployment
+fastapi==0.95.2
+uvicorn[standard]==0.22.0
+onnxruntime==1.15.1
+pillow==10.0.0
+numpy==1.26.0
+
+# Core Model Dependencies
+torch==2.2.0
+torchvision==0.17.0
+scikit-image==0.22.0
+tqdm==4.66.1
+pyyaml==6.0.1
+
+# Evaluation Dependencies
+matplotlib==3.8.0
+pandas==2.1.1
+
+# Optional but recommended
+tensorboard==2.15.0  # for training visualization
+python-multipart==0.0.6  # for handling file uploads in FastAPI
