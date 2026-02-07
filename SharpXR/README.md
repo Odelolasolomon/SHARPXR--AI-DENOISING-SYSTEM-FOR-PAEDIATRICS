@@ -3,7 +3,7 @@
 SharpXR is a **dual-decoder U-Net** for denoising **low-dose pediatric chest X-rays** while preserving diagnostically relevant structure. This repo contains the implementation, training and evaluation scripts used in our MIRASOL, MICCAI 2025 work.
 
 > *SharpXR: Structure-Aware Denoising for Pediatric Chest X-Rays*  
-> Code: https://github.com/ileri-oluwa-kiiye/SharpXR
+
 
 ---
 
@@ -97,17 +97,7 @@ See `evaluation/qualitative_results/` for ROI crops highlighting rib and lung bo
 
 ---
 
-## Citation
-If this repository helps your research, please cite:
 
-    @inproceedings{abolade2025sharpxr,
-      title   = {SharpXR: Structure-Aware Denoising for Pediatric Chest X-Rays},
-      author  = {Abolade, Ilerioluwakiiye and Idoko, Emmanuel and Odelola, Solomon and Omoigui, Promise and Adebanwo, Adetola and Iorumbur, Aondana and Anazodo, Udunna and Crimi, Alessandro and Confidence, Raymond},
-      booktitle = {Medical Image Computing and Computer-Assisted Intervention (MICCAI)},
-      year    = {2025}
-    }
-
----
 
 ## Acknowledgements
 We thank **ML Collective** for compute and weekly feedback, and **AFRICAI** for mentorship.  
@@ -116,6 +106,3 @@ Supported in part by the Italian Ministry of University and Research (MUR), proj
 ---
 
 
-## Links
-- Code: https://github.com/ileri-oluwa-kiiye/SharpXR
-- Paper: [https://www.arxiv.org/abs/2508.08518](https://www.arxiv.org/abs/2508.08518)
