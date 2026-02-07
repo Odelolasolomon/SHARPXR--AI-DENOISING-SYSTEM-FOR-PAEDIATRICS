@@ -57,6 +57,10 @@ data/raw/
 data/processed/
 data/temp/
 data/cache/
+# Large datasets
+SharpXR/data/archive (5)/
+SharpXR/data/archive (5).zip
+data/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -110,9 +114,9 @@ site/
 temp/
 tmp/
 
-# Large model files (uncomment if you want to exclude specific models)
-# best_denoiser.pt
-# *.weights
+# Large model files
+SharpXR/best_denoiser.pt
+*.weights
 
 # Frontend build artifacts (if applicable)
 node_modules/
